@@ -22,18 +22,20 @@ def f_value(y1, x1, y2, x2):
             rss: Returns residual sum of squares of the linear equation represented by that data
             length: The number of n terms that the data represents
         """
-        A = np.vstack([x, np.ones(len(x))]).T
-        rss = np.linalg.lstsq(A, y, rcond=None)[1]
+        A = np.vstack([x.T, np.ones(len(x))]).T
+        rss = np.linalg.lstsq(A, y, rcond=None)[1][0]
         length = len(y)
         return (rss, length)
 
 
-    rss_total, n_total = find_rss(np.append(y1, y2), np.append(x1, x2))
+    rss_total, n_total = find_rss(np.append(y1, y2), pd.concat([x1, x2]))
     rss_1, n_1 = find_rss(y1, x1)
     rss_2, n_2 = find_rss(y2, x2)
 
-    chow_nom = (rss_total - (rss_1 + rss_2)) / 2
-    chow_denom = (rss_1 + rss_2) / (n_1 + n_2 - 4)
+    df1 = len(x1.columns)+1
+    df2 = (n_1 + n_2) - 2*df1
+    chow_nom = (rss_total - (rss_1 + rss_2)) / df1
+    chow_denom = (rss_1 + rss_2) / df2
     return chow_nom / chow_denom
 
 
@@ -41,8 +43,8 @@ def p_value(y1, x1, y2, x2, **kwargs):
     F = f_value(y1, x1, y2, x2, **kwargs)
     if not F:
         return 1
-    df1 = 2
-    df2 = len(x1) + len(x2) - 4
+    df1 = len(x1.columns)+1
+    df2 = (len(x1) + len(x2)) - 2*(df1)
 
     # The survival function (1-cdf) is more precise than using 1-cdf,
     # this helps when p-values are very close to zero.
