@@ -22,7 +22,7 @@ def f_value(y1, x1, y2, x2):
             rss: Returns residual sum of squares of the linear equation represented by that data
             length: The number of n terms that the data represents
         """
-        A = np.vstack([x, np.ones(len(x))]).T
+        A = np.vstack([x.T, np.ones(len(x))]).T
         rss = np.linalg.lstsq(A, y, rcond=None)[1]
         length = len(y)
         return (rss, length)
